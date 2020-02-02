@@ -1359,8 +1359,8 @@
   public $typemap(cstype, Urho3D::Octant *) Parent {
     get { return GetParent(); }
   }
-  public $typemap(cstype, Urho3D::Octree *) Root {
-    get { return GetRoot(); }
+  public $typemap(cstype, Urho3D::Octree *) Octree {
+    get { return GetOctree(); }
   }
   public $typemap(cstype, unsigned int) NumDrawables {
     get { return GetNumDrawables(); }
@@ -1371,7 +1371,7 @@
 %csmethodmodifiers Urho3D::Octant::GetCullingBox "private";
 %csmethodmodifiers Urho3D::Octant::GetLevel "private";
 %csmethodmodifiers Urho3D::Octant::GetParent "private";
-%csmethodmodifiers Urho3D::Octant::GetRoot "private";
+%csmethodmodifiers Urho3D::Octant::GetOctree "private";
 %csmethodmodifiers Urho3D::Octant::GetNumDrawables "private";
 */
 %typemap(cscode) Urho3D::Octree %{
