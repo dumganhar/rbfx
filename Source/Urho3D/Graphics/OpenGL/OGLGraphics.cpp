@@ -3167,6 +3167,9 @@ void Graphics::ResetCachedState()
     for (auto& vertexBuffer : vertexBuffers_)
         vertexBuffer = nullptr;
 
+    for (auto& constantBuffer : constantBuffers_)
+        constantBuffer = {};
+
     for (unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
     {
         textures_[i] = nullptr;
