@@ -276,8 +276,8 @@ public:
     unsigned GetNumViewports() const { return viewports_.size(); }
 
     /// Return new or existing pipeline state.
-    // TODO(renderer): Consider returning SharedPtr and making cache non-owning
-    PipelineState* GetOrCreatePipelineState(const PipelineStateDesc& desc);
+    // TODO(renderer): Consider making cache non-owning
+    SharedPtr<PipelineState> GetOrCreatePipelineState(const PipelineStateDesc& desc);
     /// Return backbuffer viewport by index.
     Viewport* GetViewport(unsigned index) const;
     /// Return nth backbuffer viewport associated to a scene. Index 0 returns the first.
