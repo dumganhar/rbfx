@@ -59,6 +59,9 @@ public:
     /// Return the latest timestamp of the shader code and its includes.
     unsigned GetTimeStamp() const { return timeStamp_; }
 
+    /// Return global list of shader files.
+    static ea::string GetShaderFileList();
+
 private:
     /// Return hash for given shader defines and current global shader defines.
     unsigned GetShaderDefinesHash(const char* defines) const;
@@ -81,6 +84,8 @@ private:
     unsigned timeStamp_;
     /// Number of unique variations so far.
     unsigned numVariations_;
+    /// Mapping of shader files for error reporting.
+    static ea::unordered_map<ea::string, unsigned> fileToIndexMapping;
 };
 
 }
