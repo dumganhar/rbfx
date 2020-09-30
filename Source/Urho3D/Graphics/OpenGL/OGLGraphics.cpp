@@ -571,11 +571,6 @@ void Graphics::Close()
     Release(true, true);
 }
 
-void Graphics::SetEnableConstantBuffers(bool enable)
-{
-    constantBuffersEnabled_ = enable && constantBuffersSupport_;
-}
-
 bool Graphics::TakeScreenShot(Image& destImage)
 {
     URHO3D_PROFILE("TakeScreenShot");
