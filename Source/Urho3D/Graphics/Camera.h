@@ -149,6 +149,8 @@ public:
     Matrix4 GetProjection() const;
     /// Return projection matrix converted to API-specific format for use as a shader parameter.
     Matrix4 GetGPUProjection() const;
+    /// Return effective view-projection matrix with optionally applied depth bias.
+    Matrix4 GetEffectiveGPUViewProjection(float constantDepthBias) const;
     /// Return view matrix.
     const Matrix3x4& GetView() const;
     /// Return view-projection matrix.
