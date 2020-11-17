@@ -40,6 +40,7 @@
 #include "../IO/Log.h"
 #include "../IO/VectorBuffer.h"
 #include "../Resource/ResourceCache.h"
+#include "../Resource/ResourceEvents.h"
 #include "../Resource/XMLFile.h"
 #include "../Resource/JSONFile.h"
 #include "../Scene/Scene.h"
@@ -416,18 +417,19 @@ bool Material::Load(const XMLElement& source)
                     type = Texture3D::GetTypeStatic();
 
                 if (type == Texture3D::GetTypeStatic())
-                    SetTexture(unit, cache->GetResource<Texture3D>(name));
+                    SetTextureInternal(unit, cache->GetResource<Texture3D>(name));
                 else if (type == Texture2DArray::GetTypeStatic())
-                    SetTexture(unit, cache->GetResource<Texture2DArray>(name));
+                    SetTextureInternal(unit, cache->GetResource<Texture2DArray>(name));
                 else
 #endif
-                    SetTexture(unit, cache->GetResource<TextureCube>(name));
+                    SetTextureInternal(unit, cache->GetResource<TextureCube>(name));
             }
             else
-                SetTexture(unit, cache->GetResource<Texture2D>(name));
+                SetTextureInternal(unit, cache->GetResource<Texture2D>(name));
         }
         textureElem = textureElem.GetNext("texture");
     }
+    RefreshTextureEventSubscriptions();
 
     batchedParameterUpdate_ = true;
     XMLElement parameterElem = source.GetChild("parameter");
@@ -573,17 +575,18 @@ bool Material::Load(const JSONValue& source)
                     type = Texture3D::GetTypeStatic();
 
                 if (type == Texture3D::GetTypeStatic())
-                    SetTexture(unit, cache->GetResource<Texture3D>(textureName));
+                    SetTextureInternal(unit, cache->GetResource<Texture3D>(textureName));
                 else if (type == Texture2DArray::GetTypeStatic())
-                    SetTexture(unit, cache->GetResource<Texture2DArray>(textureName));
+                    SetTextureInternal(unit, cache->GetResource<Texture2DArray>(textureName));
                 else
 #endif
-                    SetTexture(unit, cache->GetResource<TextureCube>(textureName));
+                    SetTextureInternal(unit, cache->GetResource<TextureCube>(textureName));
             }
             else
-                SetTexture(unit, cache->GetResource<Texture2D>(textureName));
+                SetTextureInternal(unit, cache->GetResource<Texture2D>(textureName));
         }
     }
+    RefreshTextureEventSubscriptions();
 
     // Get shader parameters
     batchedParameterUpdate_ = true;
@@ -996,6 +999,12 @@ void Material::SetShaderParameterAnimationSpeed(const ea::string& name, float sp
 
 void Material::SetTexture(TextureUnit unit, Texture* texture)
 {
+    SetTextureInternal(unit, texture);
+    RefreshTextureEventSubscriptions();
+}
+
+void Material::SetTextureInternal(TextureUnit unit, Texture* texture)
+{
     if (unit < MAX_TEXTURE_UNITS)
     {
         if (texture)
@@ -1134,6 +1143,7 @@ SharedPtr<Material> Material::Clone(const ea::string& cloneName) const
     ret->fillMode_ = fillMode_;
     ret->renderOrder_ = renderOrder_;
     ret->RefreshMemoryUse();
+    ret->RefreshTextureEventSubscriptions();
 
     return ret;
 }
@@ -1253,6 +1263,7 @@ void Material::ResetToDefaults()
         GetSubsystem<ResourceCache>()->GetResource<Technique>("Techniques/NoTexture.xml"));
 
     textures_.clear();
+    RefreshTextureEventSubscriptions();
 
     batchedParameterUpdate_ = true;
     shaderParameters_.clear();
@@ -1377,6 +1388,15 @@ void Material::ApplyShaderDefines(unsigned index)
         techniques_[index].technique_ = techniques_[index].original_->CloneWithDefines(vertexShaderDefines_, pixelShaderDefines_);
 }
 
+void Material::RefreshTextureEventSubscriptions()
+{
+    UnsubscribeFromEvent(E_RELOADFINISHED);
+    const auto onReload = [this](StringHash, const VariantMap&) { MarkPipelineStateHashDirty(); };
+    for (const auto& item : textures_)
+        SubscribeToEvent(item.second, E_RELOADFINISHED, onReload);
+    MarkPipelineStateHashDirty();
+}
+
 unsigned Material::RecalculatePipelineStateHash() const
 {
     unsigned hash = 0;
@@ -1388,6 +1408,13 @@ unsigned Material::RecalculatePipelineStateHash() const
     CombineHash(hash, depthBias_.constantBias_);
     CombineHash(hash, depthBias_.slopeScaledBias_);
     CombineHash(hash, alphaToCoverage_);
+    for (const auto& item : textures_)
+    {
+        CombineHash(hash, item.first);
+        CombineHash(hash, item.second->GetSRGB());
+        CombineHash(hash, item.second->GetLinear());
+    }
+
     return hash;
 }
 

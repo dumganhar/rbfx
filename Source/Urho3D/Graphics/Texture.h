@@ -62,6 +62,8 @@ public:
     void SetShadowCompare(bool enable);
     /// Set border color for border addressing mode.
     void SetBorderColor(const Color& color);
+    /// Set whether the texture data is in linear color space (instead of gamma space).
+    void SetLinear(bool linear);
     /// Set sRGB sampling and writing mode.
     void SetSRGB(bool enable);
     /// Set backup texture to use when rendering to this texture.
@@ -107,6 +109,9 @@ public:
 
     /// Return border color.
     const Color& GetBorderColor() const { return borderColor_; }
+
+    /// Return whether the texture data are in linear space (instead of gamma space).
+    bool GetLinear() const { return linear_; }
 
     /// Return whether is using sRGB sampling and writing.
     bool GetSRGB() const { return sRGB_; }
@@ -242,6 +247,8 @@ protected:
     int multiSample_{1};
     /// sRGB sampling and writing mode flag.
     bool sRGB_{};
+    /// Whether the texture data is in linear color space (instead of gamma space).
+    bool linear_{};
     /// Parameters dirty flag.
     bool parametersDirty_{true};
     /// Multisampling autoresolve flag.
